@@ -1,0 +1,138 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Satış Raporu</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 40px; }
+      .kpis { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 18px; }
+      .card { border: 1px solid #ddd; border-radius: 10px; padding: 14px; min-width: 160px; }
+      table { border-collapse: collapse; width: 100%; margin: 14px 0; }
+      th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+      th { background: #f5f5f5; }
+      img { max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 10px; padding: 8px; }
+      .small { color: #666; font-size: 12px; }
+      a { text-decoration: none; }
+    </style>
+  </head>
+  <body>
+
+    <a href="/">&larr; Yeni analiz</a>
+
+    <h1>Satış Raporu</h1>
+
+    <!-- SQLite ekleri -->
+    <p>
+      <a href="/history">📁 Geçmiş Raporlar</a>
+    </p>
+
+    {% if meta %}
+      <p class="small">
+        Rapor No: {{ meta.id }} —
+        Oluşturulma: {{ meta.created_at }} —
+        Dosya: {{ meta.original_filename }}
+      </p>
+    {% endif %}
+
+    <!-- KPI'lar -->
+    <div class="kpis">
+      <div class="card">
+        <b>Toplam Ciro</b><br/>
+        {{ "%.2f"|format(kpi.total_revenue) }}
+      </div>
+      <div class="card">
+        <b>Toplam Sipariş</b><br/>
+        {{ kpi.total_orders }}
+      </div>
+      <div class="card">
+        <b>Toplam Ürün Adedi</b><br/>
+        {{ kpi.total_items }}
+      </div>
+      <div class="card">
+        <b>Ortalama Sipariş Tutarı</b><br/>
+        {{ "%.2f"|format(kpi.aov) }}
+      </div>
+    </div>
+
+    <!-- Grafik -->
+    <h2>Günlük Ciro Grafiği</h2>
+    <p class="small">Grafik sistem tarafından otomatik oluşturulmuştur.</p>
+    <img src="/static/{{ chart_file }}" alt="Günlük ciro grafiği" />
+
+    <!-- En çok satan ürünler -->
+    <h2>En Çok Satan Ürünler (İlk 10)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Ürün</th>
+          <th>Ciro</th>
+          <th>Satılan Adet</th>
+          <th>Sipariş Sayısı</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in top_products %}
+          <tr>
+            <td>{{ r.product }}</td>
+            <td>{{ "%.2f"|format(r.revenue) }}</td>
+            <td>{{ r.units }}</td>
+            <td>{{ r.orders }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <!-- Günlük özet -->
+    <h2>Günlük Satış Özeti (Son 14 Gün)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Tarih</th>
+          <th>Ciro</th>
+          <th>Sipariş</th>
+          <th>Ürün Adedi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in daily %}
+          <tr>
+            <td>{{ r.day }}</td>
+            <td>{{ "%.2f"|format(r.revenue) }}</td>
+            <td>{{ r.orders }}</td>
+            <td>{{ r.units }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <!-- Ön izleme (varsa) -->
+    {% if preview and preview|length > 0 %}
+      <h2>Veri Ön İzleme (Son 30 Satır)</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Tarih</th>
+            <th>Sipariş No</th>
+            <th>Ürün</th>
+            <th>Adet</th>
+            <th>Birim Fiyat</th>
+            <th>Satır Cirosu</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in preview %}
+            <tr>
+              <td>{{ r.date }}</td>
+              <td>{{ r.order_id }}</td>
+              <td>{{ r.product }}</td>
+              <td>{{ r.quantity }}</td>
+              <td>{{ r.unit_price }}</td>
+              <td>{{ "%.2f"|format(r.revenue) }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+
+  </body>
+</html>
