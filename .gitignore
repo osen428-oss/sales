@@ -1,0 +1,4 @@
+sales.db
+sales.csv
+__pycache__/
+*.pyc
